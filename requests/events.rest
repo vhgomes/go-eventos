@@ -1,0 +1,46 @@
+### Create a event
+POST http://localhost:8080/api/v1/events
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc2NjQzODUsInVzZXJJZCI6Mn0.DKbfPIN-yhZOVuLNddjZ6nKqm9JOR8u-hHw-_UQ58eg
+
+{
+  "name": "Eventão 02",
+  "ownerId": 1,
+  "description": "Eventão 02 bombando",
+  "date": "2025-05-20T00:00:00Z",
+  "location": "Palmas - TO"
+}
+
+### Get all events
+GET http://localhost:8080/api/v1/events
+Content-Type: application/json
+
+### Get event by id
+GET http://localhost:8080/api/v1/events/1
+Content-Type: application/json
+
+### Update Event
+PUT http://localhost:8080/api/v1/events/1
+Content-Type: application/json
+
+{
+  "name": "Go Conference Update",
+  "ownerId": 1,
+  "description": "A conference about Go programming",
+  "date": "2025-05-20T10:00:00Z",
+  "location": "New York"
+}
+
+### Delete event by id
+DELETE http://localhost:8080/api/v1/events/1
+Content-Type: application/json
+
+
+### Add user to event
+POST http://localhost:8080/api/v1/events/2/attendees/1
+Content-Type: application/json
+
+
+### Get attendees from event
+GET http://localhost:8080/api/v1/events/2/attendees
+Content-Type: application/json
