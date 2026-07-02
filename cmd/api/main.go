@@ -20,7 +20,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattn/go-sqlite3" // ou "github.com/lib/pq" para PostgreSQL
+	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -28,7 +28,7 @@ import (
 func main() {
 	cfg := config.Load()
 
-	db, err := sql.Open("pgx", cfg.DatabaseURL)
+	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -38,6 +38,7 @@ func main() {
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
+	// Verifica conectividade
 	if err := db.Ping(); err != nil {
 		log.Fatalf("database unreachable: %v", err)
 	}
