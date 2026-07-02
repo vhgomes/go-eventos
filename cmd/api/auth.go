@@ -80,6 +80,7 @@ func (app *application) login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&auth); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
 	}
 
 	existingUser, err := app.models.Users.GetByEmail(auth.Email)
