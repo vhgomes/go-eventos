@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,6 +14,7 @@ import (
 	"vhgomes-eventos/internal/handlers"
 	"vhgomes-eventos/internal/middleware"
 	"vhgomes-eventos/internal/pkg/config"
+	"vhgomes-eventos/internal/pkg/logger"
 	"vhgomes-eventos/internal/repository/postgres"
 	"vhgomes-eventos/internal/service"
 
@@ -23,6 +23,7 @@ import (
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		logger.Fatal("failed to connect to database", err)
 	}
 	defer db.Close()
 
@@ -40,9 +41,9 @@ func main() {
 
 	// Verifica conectividade
 	if err := db.Ping(); err != nil {
-		log.Fatalf("database unreachable: %v", err)
+		logger.Fatal("database unreachable", err)
 	}
-	log.Printf("postgres connection established (max_open=%d, max_idle=%d)", cfg.MaxOpenConns, cfg.MaxIdleConns)
+	logger.Info("postgres connection established", zap.Int("max_open", cfg.MaxOpenConns), zap.Int("max_idle", cfg.MaxIdleConns))
 
 	userRepo := postgres.NewUserRepo(db)
 	eventRepo := postgres.NewEventRepo(db)
@@ -100,7 +101,7 @@ func main() {
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		log.Printf("starting server on port %s", cfg.Port)
+		logger.Info("starting server", zap.String("port", cfg.Port))
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErrors <- err
 		}
@@ -111,20 +112,20 @@ func main() {
 
 	select {
 	case err := <-serverErrors:
-		log.Fatalf("server error: %v", err)
+		logger.Fatal("server error", err)
 	case sig := <-shutdown:
-		log.Printf("shutting down server (signal: %s)", sig.String())
+		logger.Info("shutting down server", zap.String("signal", sig.String()))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("server forced to shutdown: %v", err)
+		logger.Error("server forced to shutdown", err)
 		if err := srv.Close(); err != nil {
-			log.Printf("failed to close server: %v", err)
+			logger.Error("failed to close server", err)
 		}
 	} else {
-		log.Println("server stopped gracefully")
+		logger.Info("server stopped gracefully")
 	}
 }

@@ -3,9 +3,11 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"vhgomes-eventos/internal/pkg/logger"
 	"vhgomes-eventos/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type EventHandler struct {
@@ -38,16 +40,21 @@ func (h *EventHandler) Create(c *gin.Context) {
 
 	var req service.CreateEventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("failed to bind create event request", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	logger.Info("creating event", zap.Int("owner_id", user.Id), zap.String("name", req.Name))
+
 	event, err := h.eventService.Create(c.Request.Context(), user.Id, req)
 	if err != nil {
+		logger.Error("failed to create event", err, zap.Int("owner_id", user.Id))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("event created successfully", zap.Int("event_id", event.Id))
 	c.JSON(http.StatusCreated, event)
 }
 
@@ -58,8 +65,10 @@ func (h *EventHandler) Create(c *gin.Context) {
 // @Success 200 {array} domain.Event
 // @Router /api/v1/events [get]
 func (h *EventHandler) GetAll(c *gin.Context) {
+	logger.Info("fetching all events")
 	events, err := h.eventService.GetAll(c.Request.Context())
 	if err != nil {
+		logger.Error("failed to fetch all events", err)
 		ResponseError(c, err)
 		return
 	}
@@ -84,6 +93,7 @@ func (h *EventHandler) GetByID(c *gin.Context) {
 
 	event, err := h.eventService.GetByID(c.Request.Context(), id)
 	if err != nil {
+		logger.Error("failed to fetch event by id", err, zap.Int("event_id", id))
 		ResponseError(c, err)
 		return
 	}
@@ -119,11 +129,15 @@ func (h *EventHandler) Update(c *gin.Context) {
 
 	var req service.UpdateEventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("failed to bind update event request", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	logger.Info("updating event", zap.Int("event_id", id), zap.Int("user_id", user.Id))
+
 	if err := h.eventService.Update(c.Request.Context(), id, user.Id, req); err != nil {
+		logger.Error("failed to update event", err, zap.Int("event_id", id))
 		ResponseError(c, err)
 		return
 	}
@@ -159,9 +173,11 @@ func (h *EventHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.eventService.Delete(c.Request.Context(), id, user.Id); err != nil {
+		logger.Error("failed to delete event", err, zap.Int("event_id", id))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("event deleted successfully", zap.Int("event_id", id))
 	c.JSON(http.StatusNoContent, nil)
 }

@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"vhgomes-eventos/internal/pkg/logger"
 	"vhgomes-eventos/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
@@ -43,9 +45,12 @@ type loginResponse struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("failed to bind register request", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	logger.Info("starting user registration", zap.String("email", req.Email))
 
 	user, err := h.authService.Register(c.Request.Context(), service.RegisterRequest{
 		Email:    req.Email,
@@ -53,10 +58,12 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Name:     req.Name,
 	})
 	if err != nil {
+		logger.Error("failed to register user", err, zap.String("email", req.Email))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("user registered successfully", zap.Int("user_id", user.Id))
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -73,18 +80,23 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("failed to bind login request", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	logger.Info("starting user login", zap.String("email", req.Email))
 
 	token, err := h.authService.Login(c.Request.Context(), service.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
 	})
 	if err != nil {
+		logger.Error("login failed", err, zap.String("email", req.Email))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("user logged in successfully", zap.String("email", req.Email))
 	c.JSON(http.StatusOK, loginResponse{Token: token})
 }

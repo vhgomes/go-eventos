@@ -75,3 +75,13 @@ func Warn(msg string, fields ...zap.Field) {
 	log.Warn(msg, fields...)
 	log.Sync()
 }
+
+func Fatal(msg string, err error, fields ...zap.Field) {
+	if err != nil {
+		tags := append(fields, zap.NamedError("error", err))
+		log.Fatal(msg, tags...)
+	} else {
+		log.Fatal(msg, fields...)
+	}
+	log.Sync()
+}

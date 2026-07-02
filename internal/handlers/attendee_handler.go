@@ -3,9 +3,11 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"vhgomes-eventos/internal/pkg/logger"
 	"vhgomes-eventos/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AttendeeHandler struct {
@@ -50,10 +52,12 @@ func (h *AttendeeHandler) AddAttendee(c *gin.Context) {
 	}
 
 	if err := h.attendeeService.AddAttendee(c.Request.Context(), eventID, userID, currentUser.Id); err != nil {
+		logger.Error("failed to add attendee", err, zap.Int("event_id", eventID), zap.Int("user_id", userID))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("attendee added successfully", zap.Int("event_id", eventID), zap.Int("user_id", userID))
 	c.JSON(http.StatusCreated, gin.H{"message": "attendee added successfully"})
 }
 
@@ -90,10 +94,12 @@ func (h *AttendeeHandler) RemoveAttendee(c *gin.Context) {
 	}
 
 	if err := h.attendeeService.RemoveAttendee(c.Request.Context(), eventID, userID, currentUser.Id); err != nil {
+		logger.Error("failed to remove attendee", err, zap.Int("event_id", eventID), zap.Int("user_id", userID))
 		ResponseError(c, err)
 		return
 	}
 
+	logger.Info("attendee removed successfully", zap.Int("event_id", eventID), zap.Int("user_id", userID))
 	c.JSON(http.StatusNoContent, nil)
 }
 
@@ -113,8 +119,10 @@ func (h *AttendeeHandler) GetAttendees(c *gin.Context) {
 		return
 	}
 
+	logger.Info("fetching attendees for event", zap.Int("event_id", eventID))
 	users, err := h.attendeeService.GetAttendeesByEvent(c.Request.Context(), eventID)
 	if err != nil {
+		logger.Error("failed to fetch attendees", err, zap.Int("event_id", eventID))
 		ResponseError(c, err)
 		return
 	}
@@ -137,8 +145,10 @@ func (h *AttendeeHandler) GetEventsByAttendee(c *gin.Context) {
 		return
 	}
 
+	logger.Info("fetching events by attendee", zap.Int("user_id", userID))
 	events, err := h.attendeeService.GetEventsByAttendee(c.Request.Context(), userID)
 	if err != nil {
+		logger.Error("failed to fetch events by attendee", err, zap.Int("user_id", userID))
 		ResponseError(c, err)
 		return
 	}
