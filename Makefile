@@ -17,6 +17,7 @@ MIGRATIONS_PATH := migrations
 
 .PHONY: help run build test test-cover tidy fmt vet lint clean \
         swag docker-build docker-run \
+        db-up db-down db-logs \
         migrate-up migrate-down migrate-force migrate-version migrate-create \
         db-reset
 
@@ -75,6 +76,18 @@ docker-build:
 ## docker-run: sobe a aplicacao via docker
 docker-run:
 	docker run --rm -p 8080:8080 --env-file .env $(APP_NAME)
+
+## db-up: sobe o container do PostgreSQL via docker-compose
+db-up:
+	docker compose up -d db
+
+## db-down: derruba o container do PostgreSQL
+db-down:
+	docker compose down
+
+## db-logs: mostra os logs do container do PostgreSQL
+db-logs:
+	docker compose logs -f db
 
 ## migrate-up: aplica todas as migrations pendentes
 migrate-up:
