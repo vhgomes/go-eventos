@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -16,7 +21,36 @@ func (app *application) serve() error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Printf("Starting server on port: %d", app.port)
+	shutdownError := make(chan error)
 
-	return server.ListenAndServe()
+	go func() {
+		log.Printf("Starting server on port: %d", app.port)
+
+		err := server.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			shutdownError <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-shutdownError:
+		return err
+	case sig := <-quit:
+		log.Printf("Shutting down server. Reason: %s", sig.String())
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	err := server.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Server stopped completely")
+	return nil
 }
