@@ -48,6 +48,8 @@ func (app *application) AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid token",
 			})
+			c.Abort()
+			return
 		}
 
 		userId := claims["userId"].(float64)
