@@ -3,7 +3,6 @@ module vhgomes-eventos
 go 1.23.4
 
 require (
-	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.23.0
 )
@@ -50,7 +49,6 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.28
