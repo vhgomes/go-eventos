@@ -292,7 +292,7 @@ func (app *application) addAttendeeToEvent(c *gin.Context) {
 //	@Param			id	path		int	true	"Event ID"
 //	@Success		200	{object}	[]database.User
 //	@Router			/api/v1/events/{id}/attendees [get]
-func (app *application) getAtteendeesForEvent(c *gin.Context) {
+func (app *application) getAttendeesForEvent(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
