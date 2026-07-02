@@ -26,10 +26,15 @@ func (app *application) createEvent(c *gin.Context) {
 		return
 	}
 
-	user := app.GetUserFromContext(c)
+	user, err := app.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	event.OwnerId = user.Id
 
-	err := app.models.Events.Insert(&event)
+	err = app.models.Events.Insert(&event)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create event"})
 		return
@@ -108,7 +113,12 @@ func (app *application) updateEvent(c *gin.Context) {
 		return
 	}
 
-	user := app.GetUserFromContext(c)
+	user, err := app.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	existingEvent, err := app.models.Events.Get(id)
 
 	if err != nil {
@@ -161,7 +171,12 @@ func (app *application) deleteEvent(c *gin.Context) {
 		return
 	}
 
-	user := app.GetUserFromContext(c)
+	user, err := app.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	existingEvent, err := app.models.Events.Get(id)
 
 	if err != nil {
@@ -227,7 +242,11 @@ func (app *application) addAttendeeToEvent(c *gin.Context) {
 		return
 	}
 
-	user := app.GetUserFromContext(c)
+	user, err := app.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
 	if user.Id != event.OwnerId {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized access"})
@@ -349,7 +368,11 @@ func (app *application) deleteAttendeeFromEvent(c *gin.Context) {
 		return
 	}
 
-	user := app.GetUserFromContext(c)
+	user, err := app.GetUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
 	if user.Id != event.OwnerId {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized access"})
