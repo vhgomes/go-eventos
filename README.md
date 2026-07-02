@@ -119,7 +119,7 @@ Crie um arquivo `.env` na raiz do projeto (carregado automaticamente via `godote
 ### Pré-requisitos
 
 - [Go 1.23+](https://golang.org/dl/)
-- Uma instância [PostgreSQL](https://www.postgresql.org/) em execução
+- [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) (para subir o PostgreSQL)
 - [golang-migrate CLI](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate) (opcional, para rodar as migrations)
 - [swag CLI](https://github.com/swaggo/swag) (opcional, para regerar a documentação Swagger)
 
@@ -138,31 +138,37 @@ Crie um arquivo `.env` na raiz do projeto (carregado automaticamente via `godote
    cp .env.example .env   # ajuste os valores conforme seu ambiente
    ```
 
-3. Instale as dependências:
+3. Suba o banco de dados PostgreSQL:
+
+   ```bash
+   make db-up
+   ```
+
+4. Instale as dependências:
 
    ```bash
    make tidy
    ```
 
-4. Execute as migrations do banco de dados:
+5. Execute as migrations do banco de dados:
 
    ```bash
    make migrate-up
    ```
 
-5. (Opcional) Regere a documentação Swagger:
+6. (Opcional) Regere a documentação Swagger:
 
    ```bash
    make swag
    ```
 
-6. Execute a aplicação:
+7. Execute a aplicação:
 
    ```bash
    make run
    ```
 
-7. Acesse:
+8. Acesse:
 
    - API: `http://localhost:8080/api/v1`
    - Swagger UI: `http://localhost:8080/swagger/index.html`
@@ -192,10 +198,13 @@ O projeto conta com um `Makefile` para facilitar as tarefas do dia a dia. Rode `
 | `make vet`       | Analisa o código em busca de erros comuns    |
 | `make lint`      | Executa `fmt` + `vet`                        |
 
-### Banco de dados (migrations)
+### Banco de dados (Docker Compose + migrations)
 
 | Comando                                   | Descrição                                             |
 |---------------------------------------------|---------------------------------------------------------|
+| `make db-up`                                 | Sobe o container do PostgreSQL via `docker-compose.yml`  |
+| `make db-down`                               | Derruba o container do PostgreSQL                         |
+| `make db-logs`                               | Mostra os logs do container do PostgreSQL                 |
 | `make migrate-up`                            | Aplica todas as migrations pendentes                     |
 | `make migrate-down`                          | Reverte a última migration aplicada                      |
 | `make migrate-version`                       | Mostra a versão atual das migrations                     |
